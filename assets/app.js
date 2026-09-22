@@ -1,9 +1,9 @@
 /* Quranic Guidance Scholar — bilingual chat + voice (English & Bangla)
- * Talks to the n8n "Quranic Scholar — Web API Endpoint" workflow.
+ * Talks to the Vercel serverless backend at /api/ask (Gemini).
  * Voice input uses the browser Web Speech API (no extra API key).
  */
 
-const API_URL = 'https://amanat26.app.n8n.cloud/webhook/quran-scholar';
+const API_URL = 'api/ask';
 
 const chat = document.getElementById('chat');
 const composer = document.getElementById('composer');
@@ -17,8 +17,9 @@ const langEnBtn = document.getElementById('lang-en');
 const langBnBtn = document.getElementById('lang-bn');
 const hintText = document.getElementById('hint-text');
 
-const SESSION_KEY = 'quran_scholar_session_id';
+const HISTORY_KEY = 'quran_scholar_history';
 const LANG_KEY = 'quran_scholar_lang';
+const MAX_HISTORY = 10;
 
 const STRINGS = {
   en: {
@@ -37,6 +38,7 @@ const STRINGS = {
     micDenied: 'Microphone access was denied. Please allow the microphone or type your question.',
     emptyVoice: 'I could not hear anything. Please try again.',
     connectionError: 'Something went wrong. Please check your connection and try again.',
+    rateLimited: 'The scholar is receiving many questions right now. Please wait a moment and try again.',
   },
   bn: {
     title: 'কুরআনিক দিকনির্দেশনা আলেম',
@@ -54,6 +56,7 @@ const STRINGS = {
     micDenied: 'মাইক্রোফোন ব্যবহারের অনুমতি দেওয়া হয়নি। অনুগ্রহ করে মাইক্রোফোন চালু করুন অথবা টাইপ করুন।',
     emptyVoice: 'আমি কিছু শুনতে পাইনি। আবার চেষ্টা করুন।',
     connectionError: 'কিছু ভুল হয়েছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।',
+    rateLimited: 'এই মুহূর্তে অনেক প্রশ্ন আসছে। একটু অপেক্ষা করে আবার চেষ্টা করুন।',
   },
 };
 
@@ -121,19 +124,22 @@ langEnBtn.addEventListener('click', () => applyLang('en'));
 langBnBtn.addEventListener('click', () => applyLang('bn'));
 applyLang(currentLang);
 
-/* ---------- Session ---------- */
+/* ---------- Conversation history (browser-side memory) ---------- */
 
-function getSessionId() {
-  let id = localStorage.getItem(SESSION_KEY);
-  if (!id) {
-    id = 'web-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem(SESSION_KEY, id);
+function getHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
   }
-  return id;
 }
 
-function setSessionId(id) {
-  if (id) localStorage.setItem(SESSION_KEY, id);
+function pushHistory(role, text) {
+  const history = getHistory();
+  history.push({ role, text: text.slice(0, 4000) });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-MAX_HISTORY)));
 }
 
 /* ---------- Chat UI ---------- */
@@ -177,15 +183,14 @@ async function askScholar(question) {
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, sessionId: getSessionId() }),
+    body: JSON.stringify({ question, history: getHistory() }),
   });
 
   let data = {};
   try { data = await res.json(); } catch (_) { /* non-JSON body */ }
 
-  if (data.sessionId) setSessionId(data.sessionId);
-
   if (!res.ok) {
+    if (res.status === 429) throw new Error(t('rateLimited'));
     throw new Error(data.error || t('connectionError'));
   }
   if (!data.answer) {
@@ -206,6 +211,8 @@ async function sendQuestion(question) {
     const answer = await askScholar(question);
     hideTyping();
     addMessage(answer, 'assistant');
+    pushHistory('user', question);
+    pushHistory('assistant', answer);
   } catch (err) {
     hideTyping();
     addMessage(err.message || t('connectionError'), 'assistant', true);
