@@ -7,6 +7,7 @@
   --bubble-ai: #ffffff;
   --text: #1f2933;
   --muted: #6b7280;
+  --rec: #dc2626;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -14,7 +15,7 @@
 
 html, body {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Bengali", sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -51,6 +52,8 @@ html, body {
   color: var(--gold);
 }
 
+.header-text { flex: 1; min-width: 0; }
+
 .header-text h1 {
   font-size: 1.05rem;
   font-weight: 700;
@@ -61,6 +64,32 @@ html, body {
   font-size: 0.78rem;
   opacity: 0.85;
   margin-top: 2px;
+}
+
+/* Language switch */
+.lang-switch {
+  display: flex;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.lang-btn {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lang-btn.active {
+  background: #fff;
+  color: var(--green);
 }
 
 /* Chat */
@@ -92,7 +121,7 @@ html, body {
   padding: 12px 14px;
   border-radius: 16px;
   font-size: 0.95rem;
-  line-height: 1.6;
+  line-height: 1.7;
   box-shadow: var(--shadow);
   white-space: pre-wrap;
   word-break: break-word;
@@ -108,16 +137,6 @@ html, body {
   background: var(--bubble-ai);
   border: 1px solid #e8e4da;
   border-bottom-left-radius: 4px;
-}
-
-.bubble .ayah {
-  display: block;
-  margin: 8px 0;
-  padding: 10px 12px;
-  background: #faf7ef;
-  border-left: 3px solid var(--gold);
-  border-radius: 8px;
-  font-style: italic;
 }
 
 .bubble.error {
@@ -157,14 +176,16 @@ html, body {
 /* Composer */
 .composer {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   padding: 12px 14px calc(env(safe-area-inset-bottom, 0px) + 12px);
   background: #fff;
   border-top: 1px solid #e8e4da;
+  align-items: center;
 }
 
 .composer input {
   flex: 1;
+  min-width: 0;
   border: 1px solid #d8d3c6;
   border-radius: 999px;
   padding: 12px 18px;
@@ -185,8 +206,6 @@ html, body {
   height: 48px;
   border: none;
   border-radius: 50%;
-  background: var(--green);
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,9 +214,76 @@ html, body {
   flex-shrink: 0;
 }
 
-.composer button:hover { background: var(--green-dark); }
+#send {
+  background: var(--green);
+  color: #fff;
+}
+#send:hover { background: var(--green-dark); }
+
+.mic-btn {
+  background: #eef2f0;
+  color: var(--green);
+  border: 1px solid #d8d3c6 !important;
+}
+.mic-btn:hover { background: #e2eae6; }
+
+.mic-btn.recording {
+  background: var(--rec);
+  color: #fff;
+  border-color: var(--rec) !important;
+  animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+}
+
 .composer button:active { transform: scale(0.94); }
 .composer button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Recording banner */
+.recording-banner {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1f2933;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-size: 0.88rem;
+  z-index: 10;
+}
+
+.recording-banner.hidden { display: none; }
+
+.rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--rec);
+  animation: blink-dot 1s infinite;
+}
+
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.recording-banner button {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
 
 /* Larger screens */
 @media (min-width: 768px) {
