@@ -32,7 +32,67 @@ Format:
 - End with a short, heartfelt dua or encouragement.`;
 
 const MAX_HISTORY = 10; // keep last N turns
-const MODEL = 'gemini-3.6-flash';
+// Tried in order: first that answers, wins. Later entries are fallbacks
+// for when the primary model is rate-limited or temporarily overloaded.
+const MODELS = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+const MAX_ATTEMPTS = 3;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function callGemini(apiKey, payload) {
+  let lastError = 'The scholar service is unavailable right now.';
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const model = MODELS[Math.min(attempt, MODELS.length - 1)];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    let upstream;
+    try {
+      upstream = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch (_) {
+      lastError = 'Could not reach the scholar service. Please try again.';
+      continue;
+    }
+
+    const data = await upstream.json().catch(() => ({}));
+
+    if (upstream.ok) {
+      const parts =
+        data &&
+        data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts
+          ? data.candidates[0].content.parts
+          : [];
+      const answer = parts.map((p) => p.text || '').join('').trim();
+      if (answer) return { answer };
+      lastError = 'The scholar returned an empty answer. Please try again.';
+      continue;
+    }
+
+    const msg = (data && data.error && data.error.message) || `Gemini request failed (${upstream.status})`;
+
+    // Retryable: rate limit / overload / unavailable. Wait briefly, then
+    // fall through to the next attempt (which uses the next model).
+    if (upstream.status === 429 || upstream.status === 503 || upstream.status === 500) {
+      lastError = msg;
+      await sleep(1500 * (attempt + 1));
+      continue;
+    }
+
+    // Non-retryable (bad key, model not found, invalid request): stop.
+    return { error: msg, status: upstream.status === 404 ? 502 : upstream.status };
+  }
+
+  return { error: lastError, status: 429 };
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -85,41 +145,11 @@ module.exports = async (req, res) => {
     generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+  const result = await callGemini(apiKey, payload);
 
-  try {
-    const upstream = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await upstream.json().catch(() => ({}));
-
-    if (!upstream.ok) {
-      const msg = (data && data.error && data.error.message) || `Gemini request failed (${upstream.status})`;
-      res.status(upstream.status === 429 ? 429 : 502).json({ error: msg });
-      return;
-    }
-
-    const parts =
-      data &&
-      data.candidates &&
-      data.candidates[0] &&
-      data.candidates[0].content &&
-      data.candidates[0].content.parts
-        ? data.candidates[0].content.parts
-        : [];
-
-    const answer = parts.map((p) => p.text || '').join('').trim();
-
-    if (!answer) {
-      res.status(502).json({ error: 'The scholar returned an empty answer. Please try again.' });
-      return;
-    }
-
-    res.status(200).json({ answer });
-  } catch (err) {
-    res.status(502).json({ error: 'Could not reach the scholar service. Please try again.' });
+  if (result.answer) {
+    res.status(200).json({ answer: result.answer });
+  } else {
+    res.status(result.status || 502).json({ error: result.error });
   }
 };
