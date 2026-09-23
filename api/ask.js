@@ -33,19 +33,23 @@ Format:
 
 const MAX_HISTORY = 10; // keep last N turns
 // Tried in order: first that answers, wins. Later entries are fallbacks
-// for when the primary model is rate-limited or temporarily overloaded.
-const MODELS = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
-const MAX_ATTEMPTS = 3;
+// for when a model is unavailable to this key or temporarily overloaded.
+const MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function callGemini(apiKey, payload) {
-  let lastError = 'The scholar service is unavailable right now.';
+  const errors = [];
 
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const model = MODELS[Math.min(attempt, MODELS.length - 1)];
+  for (let i = 0; i < MODELS.length; i++) {
+    const model = MODELS[i];
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     let upstream;
@@ -56,7 +60,7 @@ async function callGemini(apiKey, payload) {
         body: JSON.stringify(payload),
       });
     } catch (_) {
-      lastError = 'Could not reach the scholar service. Please try again.';
+      errors.push(`${model}: network error`);
       continue;
     }
 
@@ -73,25 +77,22 @@ async function callGemini(apiKey, payload) {
           : [];
       const answer = parts.map((p) => p.text || '').join('').trim();
       if (answer) return { answer };
-      lastError = 'The scholar returned an empty answer. Please try again.';
+      errors.push(`${model}: empty answer`);
       continue;
     }
 
-    const msg = (data && data.error && data.error.message) || `Gemini request failed (${upstream.status})`;
+    const msg = (data && data.error && data.error.message) || `HTTP ${upstream.status}`;
+    errors.push(`${model}: ${msg}`);
 
-    // Retryable: rate limit / overload / unavailable. Wait briefly, then
-    // fall through to the next attempt (which uses the next model).
+    // Retryable: rate limit / overload / unavailable — wait, then try next model.
     if (upstream.status === 429 || upstream.status === 503 || upstream.status === 500) {
-      lastError = msg;
-      await sleep(1500 * (attempt + 1));
+      await sleep(1200 * (i + 1));
       continue;
     }
-
-    // Non-retryable (bad key, model not found, invalid request): stop.
-    return { error: msg, status: upstream.status === 404 ? 502 : upstream.status };
+    // 404 (model not found for this key) or 400 — try the next model too.
   }
 
-  return { error: lastError, status: 429 };
+  return { error: errors.join(' | ') || 'The scholar service is unavailable right now.', status: 502 };
 }
 
 module.exports = async (req, res) => {
