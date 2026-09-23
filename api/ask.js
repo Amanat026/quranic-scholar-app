@@ -32,6 +32,7 @@ Format:
 - End with a short, heartfelt dua or encouragement.`;
 
 const MAX_HISTORY = 10; // keep last N turns
+const MODEL = 'gemini-3.6-flash';
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -84,8 +85,7 @@ module.exports = async (req, res) => {
     generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
   };
 
-  const model = 'gemini-2.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
 
   try {
     const upstream = await fetch(url, {
