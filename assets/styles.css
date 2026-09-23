@@ -36,24 +36,29 @@ html, body {
 .app-header {
   background: linear-gradient(135deg, #0f2c26, #0b1f1b);
   color: #fff;
-  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 16px;
   box-shadow: var(--shadow);
   border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.header-mark {
+  font-size: 34px;
+  line-height: 1.4;
+  color: var(--gold);
+  margin: 0 auto 10px;
+  display: inline-block;
+  padding: 4px 18px;
+  background: rgba(255, 209, 102, 0.08);
+  border: 1px solid rgba(255, 209, 102, 0.35);
+  border-radius: 14px;
 }
 
 .header-inner {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.header-mark {
-  font-size: 28px;
-  background: rgba(255, 209, 102, 0.08);
-  border: 1px solid rgba(255, 209, 102, 0.35);
-  border-radius: 12px;
-  padding: 6px 12px;
-  color: var(--gold);
+  text-align: left;
 }
 
 .header-text { flex: 1; min-width: 0; }
