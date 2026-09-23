@@ -32,48 +32,43 @@ html, body {
   background: var(--bg);
 }
 
-/* Header — one-line layout */
+/* Header — Arabic on top, generous sizing, nothing truncated */
 .app-header {
   background: linear-gradient(135deg, #0a1f1a, #060f0d);
   color: #fff;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 16px 18px;
   box-shadow: var(--shadow);
   border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.header-mark {
+  font-size: 30px;
+  line-height: 1.6;
+  color: var(--gold);
+  margin-bottom: 12px;
 }
 
 .header-inner {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.header-mark {
-  font-size: 20px;
-  line-height: 1.3;
-  color: var(--gold);
-  white-space: nowrap;
-  flex-shrink: 0;
+  gap: 12px;
+  text-align: left;
 }
 
 .header-text { flex: 1; min-width: 0; }
 
 .header-text h1 {
-  font-size: 1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.2px;
   color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .header-text p {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--muted);
-  margin-top: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-top: 3px;
 }
 
 /* Language switch */
@@ -90,9 +85,9 @@ html, body {
   border: none;
   background: transparent;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 7px 14px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
@@ -334,8 +329,8 @@ html, body {
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
   }
-  .header-mark { font-size: 24px; }
-  .header-text h1 { font-size: 1.2rem; }
-  .header-text p { font-size: 0.85rem; }
+  .header-mark { font-size: 36px; }
+  .header-text h1 { font-size: 1.3rem; }
+  .header-text p { font-size: 0.9rem; }
   .bubble { font-size: 1rem; }
 }
