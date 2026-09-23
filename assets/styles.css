@@ -1,17 +1,17 @@
 :root {
-  --green: #22c98d;
-  --green-dark: #17a374;
+  --green: #2ce0a0;
+  --green-dark: #1bb783;
   --gold: #ffd166;
-  --bg: #0d1420;
-  --surface: #141d2d;
-  --surface-2: #1a2536;
-  --border: #2a3950;
-  --bubble-user: #17a374;
-  --bubble-ai: #1a2536;
-  --text: #e8eef7;
-  --muted: #8fa3bd;
+  --bg: #060a12;
+  --surface: #0b1220;
+  --surface-2: #111a2c;
+  --border: #233349;
+  --bubble-user: #1bb783;
+  --bubble-ai: #111a2c;
+  --text: #eef3fb;
+  --muted: #93a7c2;
   --rec: #ff5c6c;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,7 +34,7 @@ html, body {
 
 /* Header */
 .app-header {
-  background: linear-gradient(135deg, #0f2c26, #0b1f1b);
+  background: linear-gradient(135deg, #0a1f1a, #060f0d);
   color: #fff;
   padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 16px;
   box-shadow: var(--shadow);
@@ -99,7 +99,7 @@ html, body {
 
 .lang-btn.active {
   background: var(--green);
-  color: #06231a;
+  color: #032018;
 }
 
 /* Chat */
@@ -139,7 +139,7 @@ html, body {
 
 .message.user .bubble {
   background: var(--bubble-user);
-  color: #06231a;
+  color: #032018;
   border-bottom-right-radius: 4px;
 }
 
@@ -239,7 +239,7 @@ html, body {
 
 .composer input:focus {
   border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(34, 201, 141, 0.18);
+  box-shadow: 0 0 0 3px rgba(44, 224, 160, 0.18);
   background: var(--surface-2);
 }
 
@@ -258,7 +258,7 @@ html, body {
 
 #send {
   background: var(--green);
-  color: #06231a;
+  color: #032018;
 }
 #send:hover { background: var(--green-dark); }
 
@@ -267,7 +267,7 @@ html, body {
   color: var(--green);
   border: 1px solid var(--border) !important;
 }
-.mic-btn:hover { background: #223048; }
+.mic-btn:hover { background: #1a2740; }
 
 .mic-btn.recording {
   background: var(--rec);
