@@ -16,6 +16,7 @@ const recText = document.getElementById('recording-text');
 const langEnBtn = document.getElementById('lang-en');
 const langBnBtn = document.getElementById('lang-bn');
 const hintText = document.getElementById('hint-text');
+const welcomeMsg = document.getElementById('welcome-msg');
 
 const HISTORY_KEY = 'quran_scholar_history';
 const LANG_KEY = 'quran_scholar_lang';
@@ -32,7 +33,6 @@ const STRINGS = {
       'Every answer is grounded in the Holy Quran.',
       'Type or tap the mic to speak your question.',
     ],
-    welcome: 'Assalamu alaikum. I am here to offer guidance from the Holy Quran — on any action, problem, decision, or moral question. You may write or speak in English or Bangla. How may I help you today?',
     listening: 'Listening… speak now',
     micUnsupported: 'Voice input is not supported in this browser. Please type your question instead.',
     micDenied: 'Microphone access was denied. Please allow the microphone or type your question.',
@@ -50,7 +50,6 @@ const STRINGS = {
       'প্রতিটি উত্তর পবিত্র কুরআনের আলোকে দেওয়া হয়।',
       'টাইপ করুন অথবা মাইকে চাপ দিয়ে বলুন।',
     ],
-    welcome: 'আসসালামু আলাইকুম। পবিত্র কুরআনের আলোকে দিকনির্দেশনার জন্য আমি এখানে আছি — যেকোনো কাজ, সমস্যা, সিদ্ধান্ত বা নৈতিক প্রশ্ন নিয়ে। আপনি ইংরেজি বা বাংলায় লিখতে বা বলতে পারেন। আজ আপনাকে কীভাবে সাহায্য করতে পারি?',
     listening: 'শুনছি… এখন বলুন',
     micUnsupported: 'এই ব্রাউজারে ভয়েস ইনপুট সমর্থিত নয়। অনুগ্রহ করে আপনার প্রশ্নটি টাইপ করুন।',
     micDenied: 'মাইক্রোফোন ব্যবহারের অনুমতি দেওয়া হয়নি। অনুগ্রহ করে মাইক্রোফোন চালু করুন অথবা টাইপ করুন।',
@@ -59,6 +58,37 @@ const STRINGS = {
     rateLimited: 'এই মুহূর্তে অনেক প্রশ্ন আসছে। একটু অপেক্ষা করে আবার চেষ্টা করুন।',
   },
 };
+
+/* Rotating welcome message — Bangla first, then English, looping */
+const WELCOME_MESSAGES = [
+  'আসসালামু আলাইকুম। আমি আমানত উল্লাহর গাইডেন্স স্কলার। পবিত্র কোরআন ও প্রজ্ঞার আলো থেকে আপনার যেকোনো কর্ম, সমস্যা, সিদ্ধান্ত বা নৈতিক প্রশ্নের উত্তর দিতে আমি এখানে প্রস্তুত আছি। আপনি ইংরেজি বা বাংলায় লিখে কিংবা কথা বলে প্রশ্ন করতে পারেন। আজ আপনাকে কীভাবে সাহায্য করতে পারি?',
+  "Assalamu alaikum. I am Amanat Ullah's Guidance Scholar, here to offer guidance from the Holy Quran — on any action, problem, decision, or moral question. You may write or speak in English or Bangla. How may I help you today?",
+];
+const WELCOME_INTERVAL_MS = 5000;
+const WELCOME_FADE_MS = 450;
+
+let welcomeTimer = null;
+
+function startWelcomeRotation() {
+  if (!welcomeMsg) return;
+  if (welcomeTimer) {
+    clearInterval(welcomeTimer);
+    welcomeTimer = null;
+  }
+  let idx = 0; // Bangla first
+  welcomeMsg.style.opacity = '1';
+  welcomeMsg.textContent = WELCOME_MESSAGES[idx];
+
+  welcomeTimer = setInterval(() => {
+    idx = (idx + 1) % WELCOME_MESSAGES.length;
+    const next = WELCOME_MESSAGES[idx];
+    welcomeMsg.style.opacity = '0';
+    setTimeout(() => {
+      welcomeMsg.textContent = next;
+      welcomeMsg.style.opacity = '1';
+    }, WELCOME_FADE_MS);
+  }, WELCOME_INTERVAL_MS);
+}
 
 let currentLang = localStorage.getItem(LANG_KEY) || 'en';
 
@@ -112,7 +142,6 @@ function applyLang(lang) {
   document.documentElement.lang = lang === 'bn' ? 'bn' : 'en';
   document.getElementById('app-title').textContent = t('title');
   document.getElementById('app-subtitle').textContent = t('subtitle');
-  document.getElementById('welcome-msg').textContent = t('welcome');
   input.placeholder = t('placeholder');
   recText.textContent = t('listening');
   langEnBtn.classList.toggle('active', lang === 'en');
@@ -123,6 +152,7 @@ function applyLang(lang) {
 langEnBtn.addEventListener('click', () => applyLang('en'));
 langBnBtn.addEventListener('click', () => applyLang('bn'));
 applyLang(currentLang);
+startWelcomeRotation();
 
 /* ---------- Conversation history (browser-side memory) ---------- */
 

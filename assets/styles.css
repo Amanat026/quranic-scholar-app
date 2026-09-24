@@ -151,6 +151,11 @@ html, body {
   color: #ff8a96;
 }
 
+/* Rotating welcome message — smooth fade between languages */
+#welcome-msg {
+  transition: opacity 0.45s ease;
+}
+
 /* Typing indicator */
 .typing {
   display: inline-flex;
