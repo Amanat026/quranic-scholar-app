@@ -151,9 +151,29 @@ html, body {
   color: #ff8a96;
 }
 
-/* Rotating welcome message — smooth fade between languages */
-#welcome-msg {
-  transition: opacity 0.45s ease;
+/* Rotating welcome message — fixed-size cross-fade, no layout shift */
+.welcome-bubble {
+  width: 100%;
+}
+
+.welcome-stack {
+  position: relative;
+  /* Reserve a stable height for both languages so the swap never
+   * pushes the rest of the chat. min-height fits the longer text. */
+  min-height: 10.5em;
+}
+
+.welcome-layer {
+  margin: 0;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.welcome-layer.active {
+  opacity: 1;
 }
 
 /* Typing indicator */
@@ -338,4 +358,5 @@ html, body {
   .header-text h1 { font-size: 1.3rem; }
   .header-text p { font-size: 0.9rem; }
   .bubble { font-size: 1rem; }
+  .welcome-stack { min-height: 9em; }
 }

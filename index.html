@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://quranic-scholar-app.vercel.app/og-card.jpg" />
 
   <title>Quranic Guidance Scholar — কুরআনিক দিকনির্দেশনা</title>
-  <link rel="stylesheet" href="assets/styles.css?v=6" />
+  <link rel="stylesheet" href="assets/styles.css?v=7" />
 </head>
 <body>
   <div class="app">
@@ -43,8 +43,11 @@
 
     <main id="chat" class="chat" aria-live="polite">
       <div class="message assistant">
-        <div class="bubble">
-          <p id="welcome-msg">Assalamu alaikum. I am here to offer guidance from the Holy Quran — on any action, problem, decision, or moral question. You may write or speak in English or Bangla. How may I help you today?</p>
+        <div class="bubble welcome-bubble">
+          <div class="welcome-stack">
+            <p class="welcome-layer active" id="welcome-bn" lang="bn"></p>
+            <p class="welcome-layer" id="welcome-en" lang="en"></p>
+          </div>
         </div>
       </div>
     </main>
@@ -75,6 +78,6 @@
     </div>
   </div>
 
-  <script src="assets/app.js?v=6"></script>
+  <script src="assets/app.js?v=7"></script>
 </body>
 </html>

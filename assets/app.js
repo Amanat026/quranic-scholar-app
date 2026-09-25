@@ -16,7 +16,8 @@ const recText = document.getElementById('recording-text');
 const langEnBtn = document.getElementById('lang-en');
 const langBnBtn = document.getElementById('lang-bn');
 const hintText = document.getElementById('hint-text');
-const welcomeMsg = document.getElementById('welcome-msg');
+const welcomeBn = document.getElementById('welcome-bn');
+const welcomeEn = document.getElementById('welcome-en');
 
 const HISTORY_KEY = 'quran_scholar_history';
 const LANG_KEY = 'quran_scholar_lang';
@@ -59,35 +60,46 @@ const STRINGS = {
   },
 };
 
-/* Rotating welcome message — Bangla first, then English, looping */
-const WELCOME_MESSAGES = [
-  'আসসালামু আলাইকুম। আমি আমানত উল্লাহর গাইডেন্স স্কলার। পবিত্র কোরআন ও প্রজ্ঞার আলো থেকে আপনার যেকোনো কর্ম, সমস্যা, সিদ্ধান্ত বা নৈতিক প্রশ্নের উত্তর দিতে আমি এখানে প্রস্তুত আছি। আপনি ইংরেজি বা বাংলায় লিখে কিংবা কথা বলে প্রশ্ন করতে পারেন। আজ আপনাকে কীভাবে সাহায্য করতে পারি?',
-  "Assalamu alaikum. I am Amanat Ullah's Guidance Scholar, here to offer guidance from the Holy Quran — on any action, problem, decision, or moral question. You may write or speak in English or Bangla. How may I help you today?",
-];
-const WELCOME_INTERVAL_MS = 5000;
-const WELCOME_FADE_MS = 450;
+/* Rotating welcome message — cross-fade between two stacked layers.
+ * Bangla shows first and stays for BN_DURATION_MS, then English, looping.
+ * The bubble has a fixed min-height so the swap never shifts nearby UI. */
+const WELCOME_BN =
+  'আসসালামু আলাইকুম। আমি আমানত উল্লাহর গাইডেন্স স্কলার। পবিত্র কোরআন ও প্রজ্ঞার আলো থেকে আপনার যেকোনো কর্ম, সমস্যা, সিদ্ধান্ত বা নৈতিক প্রশ্নের উত্তর দিতে আমি এখানে প্রস্তুত আছি। আপনি ইংরেজি বা বাংলায় লিখে কিংবা কথা বলে প্রশ্ন করতে পারেন। আজ আপনাকে কীভাবে সাহায্য করতে পারি?';
+const WELCOME_EN =
+  "Assalamu alaikum. I am Amanat Ullah's Guidance Scholar, here to offer guidance from the Holy Quran — on any action, problem, decision, or moral question. You may write or speak in English or Bangla. How may I help you today?";
+
+const BN_DURATION_MS = 12000; // Bangla stays visible ~12s
+const EN_DURATION_MS = 8000;  // English stays ~8s
 
 let welcomeTimer = null;
 
 function startWelcomeRotation() {
-  if (!welcomeMsg) return;
+  if (!welcomeBn || !welcomeEn) return;
   if (welcomeTimer) {
-    clearInterval(welcomeTimer);
+    clearTimeout(welcomeTimer);
     welcomeTimer = null;
   }
-  let idx = 0; // Bangla first
-  welcomeMsg.style.opacity = '1';
-  welcomeMsg.textContent = WELCOME_MESSAGES[idx];
 
-  welcomeTimer = setInterval(() => {
-    idx = (idx + 1) % WELCOME_MESSAGES.length;
-    const next = WELCOME_MESSAGES[idx];
-    welcomeMsg.style.opacity = '0';
-    setTimeout(() => {
-      welcomeMsg.textContent = next;
-      welcomeMsg.style.opacity = '1';
-    }, WELCOME_FADE_MS);
-  }, WELCOME_INTERVAL_MS);
+  welcomeBn.textContent = WELCOME_BN;
+  welcomeEn.textContent = WELCOME_EN;
+
+  // Bangla first
+  welcomeBn.classList.add('active');
+  welcomeEn.classList.remove('active');
+
+  let showingBn = true;
+
+  function cycle() {
+    const hold = showingBn ? BN_DURATION_MS : EN_DURATION_MS;
+    welcomeTimer = setTimeout(() => {
+      showingBn = !showingBn;
+      welcomeBn.classList.toggle('active', showingBn);
+      welcomeEn.classList.toggle('active', !showingBn);
+      cycle();
+    }, hold);
+  }
+
+  cycle();
 }
 
 let currentLang = localStorage.getItem(LANG_KEY) || 'en';
