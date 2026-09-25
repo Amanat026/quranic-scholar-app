@@ -110,25 +110,27 @@ html, body {
 
 .message {
   display: flex;
-  max-width: 88%;
+  width: 100%;
 }
 
 .message.user {
-  align-self: flex-end;
   justify-content: flex-end;
 }
 
 .message.assistant {
-  align-self: flex-start;
+  justify-content: flex-start;
 }
 
 .bubble {
-  padding: 12px 14px;
+  width: fit-content;
+  max-width: 78%;
+  padding: 12px 16px;
   border-radius: 16px;
   font-size: 0.95rem;
   line-height: 1.7;
   box-shadow: var(--shadow);
   white-space: pre-wrap;
+  overflow-wrap: break-word;
   word-break: break-word;
 }
 
@@ -154,12 +156,11 @@ html, body {
 /* Rotating welcome message — fixed-size cross-fade, no layout shift */
 .welcome-bubble {
   width: 100%;
+  max-width: 78%;
 }
 
 .welcome-stack {
   position: relative;
-  /* Reserve a stable height for both languages so the swap never
-   * pushes the rest of the chat. min-height fits the longer text. */
   min-height: 10.5em;
 }
 
